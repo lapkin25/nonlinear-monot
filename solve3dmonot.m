@@ -32,7 +32,7 @@ function sol = solve3dmonot (F1, F2, F3, x0, y0, z0, num_steps, x_eps, F_eps, R)
   indices(ind_cnt, :) = [2, 2, 4];
   xyz(ind_cnt, :) = [x0, y0, z0];
 
-  for step = 1:num_steps
+  for step = 1:1 #1:num_steps
     current_ind_cnt = ind_cnt;
     processed_ind = zeros(current_ind_cnt);  # обработан ли индекс
     resid_ind = zeros(current_ind_cnt);  # невязки текущих приближений
@@ -76,8 +76,9 @@ function process_index (ind, F1, F2, F3, num_steps, x_eps, F_eps, R)
     pairwise_intersection_points = [solve2dmonot(@(x,y) F1(x, y, zz), @(x,y) F2(x, y, zz), xx, yy, x_eps, F_eps, R) ; ...
       solve2dmonot(@(x,y) F1(x, y, zz), @(x,y) F3(x, y, zz), xx, yy, x_eps, F_eps, R) ; ...
       solve2dmonot(@(x,y) F2(x, y, zz), @(x,y) F3(x, y, zz), xx, yy, x_eps, F_eps, R) ];
+    disp("xy")
     pairwise_intersection_points = ...
-      [sort(pairwise_intersection_points(:, 1)), sort(pairwise_intersection_points(:, 2), "descend")];
+      [sort(pairwise_intersection_points(:, 1)), sort(pairwise_intersection_points(:, 2), "descend")]
     # обновляем координату x у приближения с текущим индексом
     if (xi <= length(pairwise_intersection_points))
       xx = xyz(ind, 1) = pairwise_intersection_points(xi);
@@ -92,8 +93,9 @@ function process_index (ind, F1, F2, F3, num_steps, x_eps, F_eps, R)
     pairwise_intersection_points = [solve2dmonot(@(y,z) F1(xx, y, z), @(y,z) F2(xx, y, z), yy, zz, x_eps, F_eps, R) ; ...
       solve2dmonot(@(y,z) F1(xx, y, z), @(y,z) F3(xx, y, z), yy, zz, x_eps, F_eps, R) ; ...
       solve2dmonot(@(y,z) F2(xx, y, z), @(y,z) F3(xx, y, z), yy, zz, x_eps, F_eps, R) ];
+    disp("yz")
     pairwise_intersection_points = ...
-      [sort(pairwise_intersection_points(:, 1)), sort(pairwise_intersection_points(:, 2), "descend")];
+      [sort(pairwise_intersection_points(:, 1)), sort(pairwise_intersection_points(:, 2), "descend")]
     # обновляем координату y у приближения с текущим индексом
     if (yi <= length(pairwise_intersection_points))
       yy = xyz(ind, 2) = pairwise_intersection_points(yi);
@@ -108,8 +110,9 @@ function process_index (ind, F1, F2, F3, num_steps, x_eps, F_eps, R)
     pairwise_intersection_points = [solve2dmonot(@(z,x) F1(x, yy, z), @(z,x) F2(x, yy, z), zz, xx, x_eps, F_eps, R) ; ...
       solve2dmonot(@(z,x) F1(x, yy, z), @(z,x) F3(x, yy, z), zz, xx, x_eps, F_eps, R) ; ...
       solve2dmonot(@(z,x) F2(x, yy, z), @(z,x) F3(x, yy, z), zz, xx, x_eps, F_eps, R) ];
+    disp("zx")
     pairwise_intersection_points = ...
-      [sort(pairwise_intersection_points(:, 1)), sort(pairwise_intersection_points(:, 2), "descend")];
+      [sort(pairwise_intersection_points(:, 1)), sort(pairwise_intersection_points(:, 2), "descend")]
     # обновляем координату z у приближения с текущим индексом
     if (zi <= length(pairwise_intersection_points))
       zz = xyz(ind, 3) = pairwise_intersection_points(zi);

@@ -50,32 +50,32 @@ endfunction
 x0 = 0;
 y0 = 0;
 z0 = 0;
-xgrid = linspace(-60, 60, 50);
-ygrid = linspace(-60, 60, 50);
-zgrid = linspace(-60, 120, 60);
+xgrid = linspace(-20, 20, 50);
+ygrid = linspace(-20, 20, 50);
+zgrid = linspace(-20, 20, 60);
 
 # manual verification of the 3D algorithm
 # choose the following intersection points:
-# xy: (1, 2) -> 1  [2]
-# yz: (2, 3) -> 2  [2]
-# zx: (1, 3) -> 2  [4]
-#plot_3_2d_functions(@(x,y) F1(x, y, z0), @(x,y) F2(x, y, z0), @(x,y) F3(x, y, z0), xgrid, "x", "y");
+# xy: (F1, F2) -> 1st  [2nd among all]
+# yz: (F2, F3) -> 2nd  [2nd among all]
+# zx: (F1, F3) -> 2nd  [4nd among all]
+plot_3_2d_functions(@(x,y) F1(x, y, z0), @(x,y) F2(x, y, z0), @(x,y) F3(x, y, z0), xgrid, "x", "y");
 #solve2dmonot(@(x,y) F1(x, y, z0), @(x,y) F2(x, y, z0), x0, y0, 1e-5, 1e-3, 1e5)
 x0 = 0.9091;
-#plot_3_2d_functions(@(y,z) F1(x0, y, z), @(y,z) F2(x0, y, z), @(y,z) F3(x0, y, z), ygrid, "y", "z");
+plot_3_2d_functions(@(y,z) F1(x0, y, z), @(y,z) F2(x0, y, z), @(y,z) F3(x0, y, z), ygrid, "y", "z");
 #solve2dmonot(@(y,z) F2(x0, y, z), @(y,z) F3(x0, y, z), y0, z0, 1e-5, 1e-3, 1e5)
 y0 = -4.1660;
-#plot_3_2d_functions(@(z,x) F1(x, y0, z), @(z,x) F2(x, y0, z), @(z,x) F3(x, y0, z), zgrid, "z", "x");
+plot_3_2d_functions(@(z,x) F1(x, y0, z), @(z,x) F2(x, y0, z), @(z,x) F3(x, y0, z), zgrid, "z", "x");
 #solve2dmonot(@(z,x) F1(x, y0, z), @(z,x) F3(x, y0, z), z0, x0, 1e-5, 1e-3, 1e5)
 z0 = 44.8626;
 
-#plot_3_2d_functions(@(x,y) F1(x, y, z0), @(x,y) F2(x, y, z0), @(x,y) F3(x, y, z0), xgrid, "x", "y");
+plot_3_2d_functions(@(x,y) F1(x, y, z0), @(x,y) F2(x, y, z0), @(x,y) F3(x, y, z0), xgrid, "x", "y");
 #solve2dmonot(@(x,y) F1(x, y, z0), @(x,y) F2(x, y, z0), x0, y0, 1e-5, 1e-3, 1e5)
 x0 = -7.2477;
-#plot_3_2d_functions(@(y,z) F1(x0, y, z), @(y,z) F2(x0, y, z), @(y,z) F3(x0, y, z), ygrid, "y", "z");
+plot_3_2d_functions(@(y,z) F1(x0, y, z), @(y,z) F2(x0, y, z), @(y,z) F3(x0, y, z), ygrid, "y", "z");
 #solve2dmonot(@(y,z) F2(x0, y, z), @(y,z) F3(x0, y, z), y0, z0, 1e-5, 1e-3, 1e5)
 y0 = -10.080;
-#plot_3_2d_functions(@(z,x) F1(x, y0, z), @(z,x) F2(x, y0, z), @(z,x) F3(x, y0, z), zgrid, "z", "x");
+plot_3_2d_functions(@(z,x) F1(x, y0, z), @(z,x) F2(x, y0, z), @(z,x) F3(x, y0, z), zgrid, "z", "x");
 #solve2dmonot(@(z,x) F1(x, y0, z), @(z,x) F3(x, y0, z), z0, x0, 1e-5, 1e-3, 1e5)
 z0 = 49.4679;
 
@@ -85,7 +85,7 @@ x0 = -8.0851;
 #plot_3_2d_functions(@(y,z) F1(x0, y, z), @(y,z) F2(x0, y, z), @(y,z) F3(x0, y, z), ygrid, "y", "z");
 #solve2dmonot(@(y,z) F2(x0, y, z), @(y,z) F3(x0, y, z), y0, z0, 1e-5, 1e-3, 1e5)
 y0 = -10.137;
-plot_3_2d_functions(@(z,x) F1(x, y0, z), @(z,x) F2(x, y0, z), @(z,x) F3(x, y0, z), zgrid, "z", "x");
+#plot_3_2d_functions(@(z,x) F1(x, y0, z), @(z,x) F2(x, y0, z), @(z,x) F3(x, y0, z), zgrid, "z", "x");
 solve2dmonot(@(z,x) F1(x, y0, z), @(z,x) F3(x, y0, z), z0, x0, 1e-5, 1e-3, 1e5)
 z0 = 49.4513;
 

@@ -14,7 +14,7 @@ indices = [];
 ind_cnt = 0;
 
 
-solve3dmonot(F1, F2, F3, x0, y0, z0, 10, 1e-3, 1e-3, 1e5)
+solve3dmonot(F1, F2, F3, x0, y0, z0, 2, 1e-3, 1e-3, 1e5)
 
 # Решает уравнение F(x0, y) = 0
 function y = find_y (F, x0)
