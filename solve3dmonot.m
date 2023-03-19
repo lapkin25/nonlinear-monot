@@ -29,7 +29,7 @@ function sol = solve3dmonot (F1, F2, F3, x0, y0, z0, num_steps, x_eps, F_eps, R)
 
   # debug
   ind_cnt += 1;
-  indices(ind_cnt, :) = [1, 3, 3];
+  indices(ind_cnt, :) = [2, 2, 4];
   xyz(ind_cnt, :) = [x0, y0, z0];
 
   for step = 1:num_steps

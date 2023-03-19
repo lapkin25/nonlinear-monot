@@ -23,7 +23,7 @@ function sol = solve2dmonot (F1, F2, x0, y0, x_eps, F_eps, R)
     # идем дальше, чтобы перейти к поиску следующего корня
     [x, y] = skip_root_right(F1, F2, x, y, 2 * x_eps, F_eps, R);
     # приближение принадлежит линии {F1(x, y) = 0}
-    while (abs(x) < R && abs(y) < R && !is_root(F1, F2, x, y, x_eps))
+    while (abs(x) < R && abs(y) < R && !is_root(F1, F2, x, y, x_eps, F_eps))
       # F1(x, y) == 0
       if (F2(x, y) > 0)  # y будет убывать
         y = solve1dmonot(@(yy) F2(x, yy), y, x_eps, F_eps, R);
@@ -43,7 +43,7 @@ function sol = solve2dmonot (F1, F2, x0, y0, x_eps, F_eps, R)
       endif
     endwhile
 
-    if (is_root(F1, F2, x, y, x_eps))
+    if (is_root(F1, F2, x, y, x_eps, F_eps))
       # добавляем найденную пару (x, y) к множеству корней
       sol = [ sol ; x, y ];
     endif
@@ -56,7 +56,7 @@ function sol = solve2dmonot (F1, F2, x0, y0, x_eps, F_eps, R)
     # идем дальше, чтобы перейти к поиску следующего корня
     [x, y] = skip_root_left(F1, F2, x, y, 2 * x_eps, F_eps, R);
     # приближение принадлежит линии {F1(x, y) = 0}
-    while (abs(x) < R && abs(y) < R && !is_root(F1, F2, x, y, x_eps))
+    while (abs(x) < R && abs(y) < R && !is_root(F1, F2, x, y, x_eps, F_eps))
       # F1(x, y) == 0
       if (F2(x, y) < 0)  # y будет возрастать
         y = solve1dmonot(@(yy) F2(x, yy), y, x_eps, F_eps, R);
@@ -76,7 +76,7 @@ function sol = solve2dmonot (F1, F2, x0, y0, x_eps, F_eps, R)
       endif
     endwhile
 
-    if (is_root(F1, F2, x, y, x_eps))
+    if (is_root(F1, F2, x, y, x_eps, F_eps))
       # добавляем найденную пару (x, y) к множеству корней
       sol = [ x, y ; sol ];
     endif
@@ -86,38 +86,40 @@ endfunction
 function [x, y] = skip_root_right (F1, F2, x0, y0, x_eps, F_eps, R)
   x = x0;
   y = y0;
-  while (is_root(F1, F2, x, y, x_eps))
-    while (is_root(F1, F2, x, y, x_eps))
+  while (is_root(F1, F2, x, y, x_eps, F_eps))
+    while (is_root(F1, F2, x, y, x_eps, F_eps))
       x += x_eps;
       y -= x_eps;
     endwhile
     # пускай приближение принадлежит линии {F1(x, y) = 0}
     x = solve1dmonot(@(xx) F1(xx, y), x, x_eps, F_eps, R);
   endwhile
-  # теперь is_root(F1, F2, x, y, x_eps) == false
+  # теперь is_root(F1, F2, x, y, x_eps, F_eps) == false
 endfunction
 
 function [x, y] = skip_root_left (F1, F2, x0, y0, x_eps, F_eps, R)
   x = x0;
   y = y0;
-  while (is_root(F1, F2, x, y, x_eps))
-    while (is_root(F1, F2, x, y, x_eps))
+  while (is_root(F1, F2, x, y, x_eps, F_eps))
+    while (is_root(F1, F2, x, y, x_eps, F_eps))
       x -= x_eps;
       y += x_eps;
     endwhile
     # пускай приближение принадлежит линии {F1(x, y) = 0}
     x = solve1dmonot(@(xx) F1(xx, y), x, x_eps, F_eps, R);
   endwhile
-  # теперь is_root(F1, F2, x, y, x_eps) == false
+  # теперь is_root(F1, F2, x, y, x_eps, F_eps) == false
 endfunction
 
 # проверяет, что x и y находятся вблизи кривых {F1 = 0} и {F2 = 0}
-function ret = is_root (F1, F2, x, y, x_eps)
-  s1 = sign(F1(x, y));
-  s2 = sign(F2(x, y));
+function ret = is_root (F1, F2, x, y, x_eps, F_eps)
+  F1_val = F1(x, y);
+  F2_val = F2(x, y);
+  s1 = sign(F1_val);
+  s2 = sign(F2_val);
   is_root_F1 = (sign(F1(x - x_eps, y)) != s1) || (sign(F1(x + x_eps, y)) != s1) ...
     || (sign(F1(x, y - x_eps)) != s1) || (sign(F1(x, y + x_eps)) != s1);
   is_root_F2 = (sign(F2(x - x_eps, y)) != s2) || (sign(F2(x + x_eps, y)) != s2) ...
     || (sign(F2(x, y - x_eps)) != s2) || (sign(F2(x, y + x_eps)) != s2);
-  ret = is_root_F1 && is_root_F2;
+  ret = is_root_F1 && is_root_F2 || abs(F1_val) < F_eps && abs(F2_val) < F_eps;
 endfunction
