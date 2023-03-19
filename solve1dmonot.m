@@ -14,7 +14,7 @@ function sol = solve1dmonot (F, x0, x_eps, F_eps, R)
     x_step *= 2;
   endwhile
   if (F(left) > 0)
-    disp("error")
+    #disp("error")
     return
   endif
 
@@ -26,7 +26,7 @@ function sol = solve1dmonot (F, x0, x_eps, F_eps, R)
     x_step *= 2;
   endwhile
   if (F(right) < 0)
-    disp("error")
+    #disp("error")
     return
   endif
 

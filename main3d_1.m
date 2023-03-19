@@ -57,7 +57,7 @@ zgrid = linspace(-10, 10, 50);
 plot_3_2d_functions(@(x,y) F1(x, y, z0), @(x,y) F2(x, y, z0), @(x,y) F3(x, y, z0), xgrid, "x", "y");
 solve2dmonot(@(x,y) F1(x, y, z0), @(x,y) F3(x, y, z0), x0, y0, 1e-5, 1e-3, 100)
 
-# solve2dmonot(@(x,y) F1(x, y, z0), @(x,y) F2(x, y, z0), x0, y0, 1e-5, 1e-3, 10)
+#solve2dmonot(@(x,y) F1(x, y, z0), @(x,y) F2(x, y, z0), x0, y0, 1e-5, 1e-3, 10)
 
 #x0 = 8.2567;
 #plot_3_2d_functions(@(y,z) F1(x0, y, z), @(y,z) F2(x0, y, z), @(y,z) F3(x0, y, z), ygrid, "y", "z");

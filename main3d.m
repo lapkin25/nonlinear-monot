@@ -52,17 +52,31 @@ y0 = 0;
 z0 = 0;
 xgrid = linspace(-20, 20, 50);
 ygrid = linspace(-20, 20, 50);
-zgrid = linspace(-20, 10, 60);
+zgrid = linspace(-20, 60, 60);
 
-plot_3_2d_functions(@(x,y) F1(x, y, z0), @(x,y) F2(x, y, z0), @(x,y) F3(x, y, z0), xgrid, "x", "y");
+#plot_3_2d_functions(@(x,y) F1(x, y, z0), @(x,y) F2(x, y, z0), @(x,y) F3(x, y, z0), xgrid, "x", "y");
 solve2dmonot(@(x,y) F1(x, y, z0), @(x,y) F3(x, y, z0), x0, y0, 1e-5, 1e-3, 1e5)
-x0 = 8.2567;
-plot_3_2d_functions(@(y,z) F1(x0, y, z), @(y,z) F2(x0, y, z), @(y,z) F3(x0, y, z), ygrid, "y", "z");
+#x0 = 8.2567;
+x0 = 1.0766;
+#plot_3_2d_functions(@(y,z) F1(x0, y, z), @(y,z) F2(x0, y, z), @(y,z) F3(x0, y, z), ygrid, "y", "z");
 solve2dmonot(@(y,z) F1(x0, y, z), @(y,z) F3(x0, y, z), y0, z0, 1e-5, 1e-3, 1e5)
-y0 = -9.8467;
-plot_3_2d_functions(@(z,x) F1(x, y0, z), @(z,x) F2(x, y0, z), @(z,x) F3(x, y0, z), zgrid, "z", "x");
+#y0 = -9.8467;
+y0 = 4.5135;
+#plot_3_2d_functions(@(z,x) F1(x, y0, z), @(z,x) F2(x, y0, z), @(z,x) F3(x, y0, z), zgrid, "z", "x");
 solve2dmonot(@(z,x) F1(x, y0, z), @(z,x) F3(x, y0, z), z0, x0, 1e-5, 1e-3, 1e5)
-z0 = 4.9540e+01;
+#z0 = 4.9540e+01;
+z0 = 6.4610;
+
+#plot_3_2d_functions(@(x,y) F1(x, y, z0), @(x,y) F2(x, y, z0), @(x,y) F3(x, y, z0), xgrid, "x", "y");
+solve2dmonot(@(x,y) F1(x, y, z0), @(x,y) F3(x, y, z0), x0, y0, 1e-5, 1e-3, 1e5)
+x0 = -1.0771;
+#plot_3_2d_functions(@(y,z) F1(x0, y, z), @(y,z) F2(x0, y, z), @(y,z) F3(x0, y, z), ygrid, "y", "z");
+solve2dmonot(@(y,z) F2(x0, y, z), @(y,z) F3(x0, y, z), y0, z0, 1e-5, 1e-3, 1e5)
+y0 = -7.0799;
+#plot_3_2d_functions(@(z,x) F1(x, y0, z), @(z,x) F2(x, y0, z), @(z,x) F3(x, y0, z), zgrid, "z", "x");
+solve2dmonot(@(z,x) F1(x, y0, z), @(z,x) F3(x, y0, z), z0, x0, 1e-5, 1e-3, 1e5)
+# не нашли z = 48! проверить функцию 2d
+z0 = 48;
 
 plot_3_2d_functions(@(x,y) F1(x, y, z0), @(x,y) F2(x, y, z0), @(x,y) F3(x, y, z0), xgrid, "x", "y");
 solve2dmonot(@(x,y) F1(x, y, z0), @(x,y) F3(x, y, z0), x0, y0, 1e-5, 1e-3, 1e5)
