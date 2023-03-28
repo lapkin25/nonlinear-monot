@@ -8,55 +8,61 @@
 # R - максимальное значение |x|, |y|, |z|
 # Возвращает матрицу N_roots x 3 из корней системы
 function sol = solve3dmonot (F1, F2, F3, x0, y0, z0, num_steps, x_eps, F_eps, R)
-  global indices
-  global ind_cnt
-  global xyz
+  # Индекс последовательности приближений: (i_xy, j_xy, k_xy, i_yz, j_yz, k_yz, i_zx, j_zx, k_zx)
+  # Вычисление разбивается на множество нитей, каждая соответствует своему индексу
+  # Каждая нить обновляет текущее приближение, соответствующее индексу, и может создавать новые нити
+  # Для каждой нити в каждом сечении берем k-ю точку пересечения линий {F_i = 0} и {F_j = 0}
+  # Обработка отдельного индекса реализована в функции process_index
 
-  sol = [];
+  global indices  # массив векторов из 9 элементов - индексы
+  global ind_cnt  # размер массива индексов
+  global xyz  # массив векторов из 3 элементов - текущее приближение для каждого индекса (для каждой нити)
+  global resid
 
-  # множество индексов вида [i, j, k] --
-  #   "по x выбрать i-ю точку пересечения пар линий нулевого уровня, по y - j-ю, по z - k-ю"
-  indices = [];
   ind_cnt = 0;
-
-  # текущие приближения для каждого такого индекса
+  indices = [];
   xyz = [];
+  resid = [];
 
-  # добавляем начальное приближение к xyz (индексы 1, 1, 1)
-  ind_cnt += 1;
-  indices(ind_cnt, :) = [1, 1, 1];
-  xyz(ind_cnt, :) = [x0, y0, z0];
+  # Начальные приближения: (i_xy, j_xy, 1, i_yz, j_yz, 1, i_zx, j_zx, 1),
+  #   где (i, j) = (1, 2) или (1, 3) или (2, 3)
+  for i_xy = 1:3
+    for j_xy = i_xy+1:3
+      for i_yz = 1:3
+        for j_yz = i_yz+1:3
+          for i_zx = 1:3
+            for j_zx = i_zx+1:3
+              ind_cnt += 1;
+              indices(ind_cnt, :) = [i_xy, j_xy, 1, i_yz, j_yz, 1, i_zx, j_zx, 1];
+              xyz(ind_cnt, :) = [x0, y0, z0];
+            endfor
+          endfor
+        endfor
+      endfor
+    endfor
+  endfor
 
-  # debug
-  ind_cnt += 1;
-  indices(ind_cnt, :) = [2, 2, 4];
-  xyz(ind_cnt, :) = [x0, y0, z0];
-
-  for step = 1:1 #1:num_steps
+  for step = 1:num_steps
     current_ind_cnt = ind_cnt;
     processed_ind = zeros(current_ind_cnt);  # обработан ли индекс
-    resid_ind = zeros(current_ind_cnt);  # невязки текущих приближений
     for ind = 1:current_ind_cnt
-      [xx, yy, zz] = num2cell(xyz(ind, :)){:};
-      resid_ind(ind) = max([abs(F1(xx, yy, zz)), abs(F2(xx, yy, zz)), abs(F3(xx, yy, zz))]);
-    endfor
-    while true
-      # сортировка выбором: выбираем на каждом шаге индекс с минимальной невязкой
-      best_ind_set = false;
-      for ind = 1:current_ind_cnt
-        if (!processed_ind(ind) && (!best_ind_set || resid_ind(best_ind) > resid_ind(ind)))
-          best_ind = ind;
-          best_ind_set = true;
-        endif
-      endfor
-      if (!best_ind_set)  # необработанные индексы кончились
-        break
-      endif
-      ind = best_ind;
-      processed_ind(ind) = true;
       process_index(ind, F1, F2, F3, num_steps, x_eps, F_eps, R);
+      processed_ind(ind) = true;
+    endfor
+  endfor
 
-    endwhile
+  sol = [];
+  for i = 1:ind_cnt
+    if (i <= length(resid) && resid(i) < F_eps)
+      flag = false;
+      for j = 1:i-1
+        flag = flag || (max(xyz(i, :) - xyz(j, :)) < x_eps);
+      endfor
+      # flag == false, если такой же точки не было
+      if (!flag)
+        sol = [sol; xyz(i, :)];
+      endif
+    endif
   endfor
 
 endfunction
@@ -66,75 +72,58 @@ function process_index (ind, F1, F2, F3, num_steps, x_eps, F_eps, R)
   global indices
   global ind_cnt
   global xyz
+  global resid
 
+  [i_xy, j_xy, k_xy, i_yz, j_yz, k_yz, i_zx, j_zx, k_zx] = num2cell(indices(ind, :)){:};
   [xx, yy, zz] = num2cell(xyz(ind, :)){:};
-  [xi, yi, zi] = num2cell(indices(ind, :)){:};
+  F = {F1, F2, F3};
 
-  for step = 1:num_steps
-    # сечение xy
-    # попарно пересекаем линии {F1 = 0}, {F2 = 0}, {F3 = 0}
-    pairwise_intersection_points = [solve2dmonot(@(x,y) F1(x, y, zz), @(x,y) F2(x, y, zz), xx, yy, x_eps, F_eps, R) ; ...
-      solve2dmonot(@(x,y) F1(x, y, zz), @(x,y) F3(x, y, zz), xx, yy, x_eps, F_eps, R) ; ...
-      solve2dmonot(@(x,y) F2(x, y, zz), @(x,y) F3(x, y, zz), xx, yy, x_eps, F_eps, R) ];
-    disp("xy")
-    pairwise_intersection_points = ...
-      [sort(pairwise_intersection_points(:, 1)), sort(pairwise_intersection_points(:, 2), "descend")]
-    # обновляем координату x у приближения с текущим индексом
-    if (xi <= length(pairwise_intersection_points))
-      xx = xyz(ind, 1) = pairwise_intersection_points(xi);
-    endif
-    # пытаемся добавить новые индексы
-    for i = 1:rows(pairwise_intersection_points)
-      try_adding_index([i, yi, zi], [pairwise_intersection_points(i, 1), yy, zz]);
-    endfor
+  # сечение xy
+  # пересекаем линии {F_i = 0}, {F_j = 0}; i = i_xy, j = j_xy
+  intersection_points = solve2dmonot(@(x,y) F{i_xy}(x, y, zz), @(x,y) F{j_xy}(x, y, zz), xx, yy, x_eps, F_eps, R);
+  # обновляем координату x - берем k-ю точку пересечения
+  if (k_xy <= rows(intersection_points))
+    xx = xyz(ind, 1) = intersection_points(k_xy, 1);
+  elseif (rows(intersection_points) > 0)
+    xx = xyz(ind, 1) = intersection_points(rows(intersection_points), 1);
+  endif
 
-    # сечение yz
-    # попарно пересекаем линии {F1 = 0}, {F2 = 0}, {F3 = 0}
-    pairwise_intersection_points = [solve2dmonot(@(y,z) F1(xx, y, z), @(y,z) F2(xx, y, z), yy, zz, x_eps, F_eps, R) ; ...
-      solve2dmonot(@(y,z) F1(xx, y, z), @(y,z) F3(xx, y, z), yy, zz, x_eps, F_eps, R) ; ...
-      solve2dmonot(@(y,z) F2(xx, y, z), @(y,z) F3(xx, y, z), yy, zz, x_eps, F_eps, R) ];
-    disp("yz")
-    pairwise_intersection_points = ...
-      [sort(pairwise_intersection_points(:, 1)), sort(pairwise_intersection_points(:, 2), "descend")]
-    # обновляем координату y у приближения с текущим индексом
-    if (yi <= length(pairwise_intersection_points))
-      yy = xyz(ind, 2) = pairwise_intersection_points(yi);
-    endif
-    # пытаемся добавить новые индексы
-    for i = 1:rows(pairwise_intersection_points)
-      try_adding_index([xi, i, zi], [xx, pairwise_intersection_points(i, 1), zz]);
-    endfor
-
-    # сечение zx
-    # попарно пересекаем линии {F1 = 0}, {F2 = 0}, {F3 = 0}
-    pairwise_intersection_points = [solve2dmonot(@(z,x) F1(x, yy, z), @(z,x) F2(x, yy, z), zz, xx, x_eps, F_eps, R) ; ...
-      solve2dmonot(@(z,x) F1(x, yy, z), @(z,x) F3(x, yy, z), zz, xx, x_eps, F_eps, R) ; ...
-      solve2dmonot(@(z,x) F2(x, yy, z), @(z,x) F3(x, yy, z), zz, xx, x_eps, F_eps, R) ];
-    disp("zx")
-    pairwise_intersection_points = ...
-      [sort(pairwise_intersection_points(:, 1)), sort(pairwise_intersection_points(:, 2), "descend")]
-    # обновляем координату z у приближения с текущим индексом
-    if (zi <= length(pairwise_intersection_points))
-      zz = xyz(ind, 3) = pairwise_intersection_points(zi);
-    endif
-    # пытаемся добавить новые индексы
-    for i = 1:rows(pairwise_intersection_points)
-      try_adding_index([xi, yi, i], [xx, yy, pairwise_intersection_points(i, 1)]);
-    endfor
-
-    #step
-    #xyz
-
-    #[xx, yy, zz]
-    #resid = max([abs(F1(xx, yy, zz)), abs(F2(xx, yy, zz)), abs(F3(xx, yy, zz))])
-    #if (resid > resid_ind(ind))
-    #  disabled_ind(ind) = true;
-    #endif
+  # пытаемся добавить новые индексы
+  for k = 1:rows(intersection_points)
+    try_adding_index([i_xy, j_xy, k, i_yz, j_yz, k_yz, i_zx, j_zx, k_zx], [intersection_points(k, 1), yy, zz]);
   endfor
 
-  indices(ind, :)
-  [xx, yy, zz]
-  resid = max([abs(F1(xx, yy, zz)), abs(F2(xx, yy, zz)), abs(F3(xx, yy, zz))])
+  # сечение yz
+  # пересекаем линии {F_i = 0}, {F_j = 0}; i = i_yz, j = j_yz
+  intersection_points = solve2dmonot(@(y,z) F{i_yz}(xx, y, z), @(y,z) F{j_yz}(xx, y, z), yy, zz, x_eps, F_eps, R);
+  # обновляем координату y - берем k-ю точку пересечения
+  if (k_yz <= rows(intersection_points))
+    yy = xyz(ind, 2) = intersection_points(k_yz, 1);
+  elseif (rows(intersection_points) > 0)
+    yy = xyz(ind, 2) = intersection_points(rows(intersection_points), 1);
+  endif
+  # пытаемся добавить новые индексы
+  for k = 1:rows(intersection_points)
+    try_adding_index([i_xy, j_xy, k_xy, i_yz, j_yz, k, i_zx, j_zx, k_zx], [xx, intersection_points(k, 1), zz]);
+  endfor
+
+  # сечение zx
+  # пересекаем линии {F_i = 0}, {F_j = 0}; i = i_zx, j = j_zx
+  intersection_points = solve2dmonot(@(z,x) F{i_zx}(x, yy, z), @(z,x) F{j_zx}(x, yy, z), zz, xx, x_eps, F_eps, R);
+  # обновляем координату z - берем k-ю точку пересечения
+  if (k_zx <= rows(intersection_points))
+    zz = xyz(ind, 3) = intersection_points(k_zx, 1);
+  elseif (rows(intersection_points) > 0)
+    zz = xyz(ind, 3) = intersection_points(rows(intersection_points), 1);
+  endif
+  # пытаемся добавить новые индексы
+  for k = 1:rows(intersection_points)
+    try_adding_index([i_xy, j_xy, k_xy, i_yz, j_yz, k_yz, i_zx, j_zx, k], [xx, yy, intersection_points(k, 1)]);
+  endfor
+
+  #indices(ind, :)
+  #[xx, yy, zz]
+  resid(ind) = max([abs(F1(xx, yy, zz)), abs(F2(xx, yy, zz)), abs(F3(xx, yy, zz))]);
 
 endfunction
 
@@ -147,9 +136,12 @@ function try_adding_index (index, point)
 
   is_index_present = false;
   for i = 1:ind_cnt
-    if (indices(i, 1) == index(1) && indices(i, 2) == index(2) && indices(i, 3) == index(3))
-      is_index_present = true;
-    endif
+    flag = true;
+    for s = 1:9
+      flag = flag && (indices(i, s) == index(s));
+    endfor
+    # flag == true, если indices(i, :) == index
+    is_index_present = is_index_present || flag;
   endfor
   # если такого индекса нет, добавляем
   if (!is_index_present)
