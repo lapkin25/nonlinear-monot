@@ -56,7 +56,7 @@ function sol = solve3dmonot (F1, F2, F3, x0, y0, z0, num_steps, x_eps, F_eps, R)
     if (i <= length(resid) && resid(i) < F_eps)
       flag = false;
       for j = 1:i-1
-        flag = flag || (max(xyz(i, :) - xyz(j, :)) < x_eps);
+        flag = flag || (max(xyz(i, :) - xyz(j, :)) < x_eps) && resid(j) < F_eps;
       endfor
       # flag == false, если такой же точки не было
       if (!flag)
