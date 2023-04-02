@@ -43,12 +43,14 @@ function sol = solve3dmonot (F1, F2, F3, x0, y0, z0, num_steps, x_eps, F_eps, R)
   endfor
 
   for step = 1:num_steps
+    printf("step %d", step)
     current_ind_cnt = ind_cnt;
     processed_ind = zeros(current_ind_cnt);  # обработан ли индекс
     for ind = 1:current_ind_cnt
       process_index(ind, F1, F2, F3, num_steps, x_eps, F_eps, R);
       processed_ind(ind) = true;
     endfor
+    printf("   mininum residual is %f\n", min(resid))
   endfor
 
   sol = [];
